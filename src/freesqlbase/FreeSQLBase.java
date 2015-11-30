@@ -61,38 +61,38 @@ public class FreeSQLBase {
 							stmt = con.createStatement();
 							if (!domainsql.equals(""))
 							{
-								System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
+								//System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 								
 							}
 								
 							if (!typesql.equals(""))
 							{
-								System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
+								//System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 							}
 								
 							if (!propertysql.equals(""))
 							{
-								System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
+								//System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 							}
 								
 							if (!entitysql.equals(""))
 							{
-								System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
+								//System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 							}
 								
 							if (!image_imgsrcsql.equals(""))
 							{
-								System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
+								//System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 							}
 								
 							if (!imgsrc_urisql.equals(""))
 							{
-								System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
+								//System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 								stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 							}
 							stmt.close();	
@@ -177,38 +177,38 @@ public class FreeSQLBase {
 								stmt = con.createStatement();
 								if (!domainsql.equals(""))
 								{
-									System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
+									//System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 									
 								}
 									
 								if (!typesql.equals(""))
 								{
-									System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
+									//System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 								}
 									
 								if (!propertysql.equals(""))
 								{
-									System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
+									//System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 								}
 									
 								if (!entitysql.equals(""))
 								{
-									System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
+									//System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 								}
 									
 								if (!image_imgsrcsql.equals(""))
 								{
-									System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
+									//System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 								}
 									
 								if (!imgsrc_urisql.equals(""))
 								{
-									System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
+									//System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 									stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 								}
 								stmt.close();	
@@ -325,8 +325,7 @@ public class FreeSQLBase {
 			try {
 				//Connection con = null; // 定义一个MYSQL链接对象
 				Class.forName("com.mysql.jdbc.Driver").newInstance(); // MYSQL驱动
-				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root","thisismysql"); // 链接本地MYSQL
-				System.out.println("yes");				
+				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root","thisismysql"); // 链接本地MYSQL				
 				} catch (Exception e) {
 					System.out.println("MYSQL ERROR:" + e.getMessage());
 				}
