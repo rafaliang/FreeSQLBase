@@ -49,6 +49,7 @@ public class FreeSQLBase {
 			String uri=null;
 			int type = 0;
 			int rank = 0;
+			int cnt0=1,cnt1=1,cnt2=1,cnt3=1,cnt4=1,cnt5=1;
 			String obj1_prev=null;
 			while (true)
 			{
@@ -130,30 +131,35 @@ public class FreeSQLBase {
 						if (type==1)
 						{
 							domainsql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							cnt1++;
 						}
 						else if (type==2)
 						{
 							//id++;
 							//System.out.printf("%s,%s,%s,%d,%d\n",mid, name, idstring, rank, id);
 							typesql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							cnt2++;
 						}
 						else if (type==3)
 						{
 							//id++;
 							//System.out.printf("%s,%s,%s,%d,%d\n",mid, name, idstring, rank, id);
 							propertysql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							cnt3++;
 						}
 						else if (type==4)
 						{
 							//id++;
 							//System.out.printf("%s,%s\n",mid, imgsrc);
 							image_imgsrcsql+=String.format("(%s,%s),", mid, imgsrc);
+							cnt4++;
 						}
 						else if (type==5)
 						{
 							//id++;
 							//System.out.printf("%s,%s\n",mid, uri);
 							imgsrc_urisql+=String.format("(%s,%s),", mid, uri);
+							cnt5++;
 						}
 						else
 						{
@@ -161,76 +167,102 @@ public class FreeSQLBase {
 							if (image!=null)
 								System.out.printf("%s,%s,%d,%d,%s,%s\n",mid, name, rank, id, description, image);*/
 							entitysql+=String.format("(%d,%s,%d,%s,%s,%s),", id, mid, rank, name, description, image);
+							cnt0++;
 						}
-						if (id%10000==0)
+						
+						if (cnt0%10000==0)
 						{
-							
-							/*System.out.printf("domain: %s\n",domainsql);
-							System.out.printf("type: %s\n",typesql);
-							System.out.printf("property: %s\n",propertysql);
-							System.out.printf("entity: %s\n",entitysql);
-							System.out.printf("image_imgsrc: %s\n",image_imgsrcsql);
-							System.out.printf("imgsrc_uri: %s\n",imgsrc_urisql);*/
-							System.out.println(id/125144312.0f);
+							System.out.println(id/88788059.0f);
 							try {
 								Statement stmt;
 								stmt = con.createStatement();
-								if (!domainsql.equals(""))
-								{
-									//System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
-									
-								}
-									
-								if (!typesql.equals(""))
-								{
-									//System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
-								}
-									
-								if (!propertysql.equals(""))
-								{
-									//System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
-								}
-									
-								if (!entitysql.equals(""))
-								{
-									//System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
-								}
-									
-								if (!image_imgsrcsql.equals(""))
-								{
-									//System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
-								}
-									
-								if (!imgsrc_urisql.equals(""))
-								{
-									//System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
-									stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
-								}
+								stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 								stmt.close();	
-								/*ResultSet res = stmt.executeQuery("select * from entity");
-								int ret_id;
-								String name;
-								if (res.next()) {
-									ret_id = res.getInt(1);
-									name = res.getString(4);
-									System.out.println(ret_id+" "+name);
-								}*/
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
-								//break;
 							}
-							domainsql = "";
+							cnt0=1;
 							entitysql = "";
+						}
+						
+						if (cnt1%10000==0)
+						{
+							System.out.println(id/88788059.0f);
+							try {
+								Statement stmt;
+								stmt = con.createStatement();
+								stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
+								stmt.close();	
+							} catch (Exception e) {
+								System.out.println("MYSQL ERROR:" + e.getMessage());
+							}
+							cnt1=1;
+							domainsql = "";
+						}
+						
+						if (cnt2%10000==0)
+						{
+							System.out.println(id/88788059.0f);
+							try {
+								Statement stmt;
+								stmt = con.createStatement();
+								stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
+								stmt.close();	
+							} catch (Exception e) {
+								System.out.println("MYSQL ERROR:" + e.getMessage());
+							}
+							cnt2=1;
 							typesql = "";
+						}
+						
+						if (cnt3%10000==0)
+						{
+							System.out.println(id/88788059.0f);
+							try {
+								Statement stmt;
+								stmt = con.createStatement();
+								stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
+								stmt.close();	
+							} catch (Exception e) {
+								System.out.println("MYSQL ERROR:" + e.getMessage());
+							}
+							cnt3=1;
 							propertysql = "";
+						}
+						
+						if (cnt4%10000==0)
+						{
+							System.out.println(id/88788059.0f);
+							try {
+								Statement stmt;
+								stmt = con.createStatement();
+								stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
+								stmt.close();	
+							} catch (Exception e) {
+								System.out.println("MYSQL ERROR:" + e.getMessage());
+							}
+							cnt4=1;
 							image_imgsrcsql = "";
+						}
+						
+						if (cnt5%10000==0)
+						{
+							System.out.println(id/88788059.0f);
+							try {
+								Statement stmt;
+								stmt = con.createStatement();
+								stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
+								stmt.close();	
+							} catch (Exception e) {
+								System.out.println("MYSQL ERROR:" + e.getMessage());
+							}
+							cnt5=1;
 							imgsrc_urisql = "";
 						}
+						
+						
+						
+						
 					}
 					obj1_prev=obj1;
 					id++;
