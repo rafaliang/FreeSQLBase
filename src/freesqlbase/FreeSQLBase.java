@@ -170,7 +170,7 @@ public class FreeSQLBase {
 							cnt0++;
 						}
 						
-						if (cnt0%10000==0)
+						if (cnt0%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -185,7 +185,7 @@ public class FreeSQLBase {
 							entitysql = "";
 						}
 						
-						if (cnt1%10000==0)
+						if (cnt1%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -200,7 +200,7 @@ public class FreeSQLBase {
 							domainsql = "";
 						}
 						
-						if (cnt2%10000==0)
+						if (cnt2%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -215,7 +215,7 @@ public class FreeSQLBase {
 							typesql = "";
 						}
 						
-						if (cnt3%10000==0)
+						if (cnt3%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -230,7 +230,7 @@ public class FreeSQLBase {
 							propertysql = "";
 						}
 						
-						if (cnt4%10000==0)
+						if (cnt4%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -245,7 +245,7 @@ public class FreeSQLBase {
 							image_imgsrcsql = "";
 						}
 						
-						if (cnt5%10000==0)
+						if (cnt5%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
@@ -368,7 +368,6 @@ public class FreeSQLBase {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		//String tmp="Charles Platt Rogers was an early American industrialist, New York City socialite and charter member and director of the Fourteenth Street Bank of New York. His longest lasting achievement was the founding the eponymous company Charles P Rogers & Co. established in 1855. This is longest continuously operating bedding manufacturing and retail company in the United States. The company continues operations to this day and provided more beds and bedding to the finest hotels and clubs than any other company during its first hundred years. Charles was a pioneer in both the manufacturing processes and importation of brass and iron bedstead and a beloved member of the business community of New York; after his death he was referred to as the "dean of the bedding manufacturers of New York City\u2026" in The Furniture Manufacturer and Artisan Periodical, volume 15, 1918.";
 		try {
 			try {
 				//Connection con = null; // 定义一个MYSQL链接对象
@@ -377,9 +376,7 @@ public class FreeSQLBase {
 				} catch (Exception e) {
 					System.out.println("MYSQL ERROR:" + e.getMessage());
 				}
-			
 
-			
 			pos = new PipedOutputStream(); pis = new PipedInputStream(pos);
 			FileInputStream s = new FileInputStream(
 					new File("/home/freebase.gz")); 
