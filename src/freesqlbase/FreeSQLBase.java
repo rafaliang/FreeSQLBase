@@ -162,7 +162,7 @@ public class FreeSQLBase {
 								System.out.printf("%s,%s,%d,%d,%s,%s\n",mid, name, rank, id, description, image);*/
 							entitysql+=String.format("(%d,%s,%d,%s,%s,%s),", id, mid, rank, name, description, image);
 						}
-						if (id%1000==0)
+						if (id%10000==0)
 						{
 							
 							/*System.out.printf("domain: %s\n",domainsql);
