@@ -28,6 +28,7 @@ public class FreeSQLBase {
 	static String prop = null;
 	static String obj2 = null;
 	static Connection con = null;
+	static PreparedStatement pstmt1 = null,pstmt2 = null,pstmt3=null,pstmt4=null,pstmt5=null,pstmt0=null;
 
 	
 	static void parse(String[] line)
@@ -53,9 +54,10 @@ public class FreeSQLBase {
 			int cnt0=1,cnt1=1,cnt2=1,cnt3=1,cnt4=1,cnt5=1;
 			String obj1_prev=null;
 			
-			PreparedStatement pstmt1 = null,pstmt2 = null,pstmt3=null,pstmt4=null,pstmt5=null,pstmt0=null;
-			try
+			
+			/*try
 			{
+				con.setAutoCommit(false);
 				pstmt1=con.prepareStatement("INSERT INTO domain VALUES (?,?,?,?)");
 				pstmt2=con.prepareStatement("INSERT INTO type VALUES (?,?,?,?)");
 				pstmt3=con.prepareStatement("INSERT INTO property VALUES (?,?,?,?)");
@@ -65,7 +67,7 @@ public class FreeSQLBase {
 			}
 			catch (Exception e) {
 				System.out.println("MYSQL ERROR:" + e.getMessage());
-			}
+			}*/
 			
 			while (true)
 			{
@@ -79,6 +81,8 @@ public class FreeSQLBase {
 							if (!domainsql.equals(""))
 							{
 								pstmt1.executeBatch();
+								con.commit();
+								//pstmt1.clearBatch();
 								//stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 								
 							}
@@ -86,30 +90,40 @@ public class FreeSQLBase {
 							if (!typesql.equals(""))
 							{
 								pstmt2.executeBatch();
+								con.commit();
+								//pstmt2.clearBatch();
 								//stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 							}
 								
 							if (!propertysql.equals(""))
 							{
 								pstmt3.executeBatch();
+								con.commit();
+								//pstmt3.clearBatch();
 								//stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 							}
 								
 							if (!entitysql.equals(""))
 							{
 								pstmt0.executeBatch();
+								con.commit();
+								//pstmt0.clearBatch();
 								//stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 							}
 								
 							if (!image_imgsrcsql.equals(""))
 							{
 								pstmt4.executeBatch();
+								con.commit();
+								//pstmt4.clearBatch();
 								//stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 							}
 								
 							if (!imgsrc_urisql.equals(""))
 							{
 								pstmt5.executeBatch();
+								con.commit();
+								//pstmt5.clearBatch();
 								//stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 							}
 							//stmt.close();	
@@ -224,11 +238,13 @@ public class FreeSQLBase {
 							cnt0++;
 						}
 						
-						if (cnt0%1000==0)
+						if (cnt0%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt0.executeBatch();
+								con.commit();
+								//pstmt0.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -236,11 +252,13 @@ public class FreeSQLBase {
 							//entitysql = "";
 						}
 						
-						if (cnt1%1000==0)
+						if (cnt1%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt1.executeBatch();
+								con.commit();
+								//pstmt1.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -248,11 +266,13 @@ public class FreeSQLBase {
 							//domainsql = "";
 						}
 						
-						if (cnt2%1000==0)
+						if (cnt2%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt2.executeBatch();
+								con.commit();
+								//pstmt2.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -260,11 +280,13 @@ public class FreeSQLBase {
 							//typesql = "";
 						}
 						
-						if (cnt3%1000==0)
+						if (cnt3%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt3.executeBatch();
+								con.commit();
+								//pstmt3.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -272,11 +294,13 @@ public class FreeSQLBase {
 							//propertysql = "";
 						}
 						
-						if (cnt4%1000==0)
+						if (cnt4%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt4.executeBatch();
+								con.commit();
+								//pstmt4.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -284,11 +308,13 @@ public class FreeSQLBase {
 							//image_imgsrcsql = "";
 						}
 						
-						if (cnt5%1000==0)
+						if (cnt5%10000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
 								pstmt5.executeBatch();
+								con.commit();
+								//pstmt5.clearBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
@@ -409,14 +435,24 @@ public class FreeSQLBase {
 			try {
 				//Connection con = null; // 定义一个MYSQL链接对象
 				Class.forName("com.mysql.jdbc.Driver").newInstance(); // MYSQL驱动
-				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root","thisismysql"); // 链接本地MYSQL				
+				//con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root","thisismysql"); // 链接本地MYSQL		
+				con = DriverManager.getConnection("jdbc:mysql://202.120.37.25:23334/Freebase", "root", "thisismysql");
+				con.setAutoCommit(false);	
+				pstmt1=con.prepareStatement("INSERT INTO domain VALUES (?,?,?,?)");
+				pstmt2=con.prepareStatement("INSERT INTO type VALUES (?,?,?,?)");
+				pstmt3=con.prepareStatement("INSERT INTO property VALUES (?,?,?,?)");
+				pstmt4=con.prepareStatement("INSERT INTO image_imgsrc VALUES (?,?)");
+				pstmt5=con.prepareStatement("INSERT INTO imgsrc_uri VALUES (?,?)");
+				pstmt0=con.prepareStatement("INSERT INTO entity VALUES (?,?,?,?,?,?)");
+				
 				} catch (Exception e) {
 					System.out.println("MYSQL ERROR:" + e.getMessage());
 				}
 
 			pos = new PipedOutputStream(); pis = new PipedInputStream(pos);
 			FileInputStream s = new FileInputStream(
-					new File("/home/freebase.gz")); 
+					//new File("/home/freebase.gz")); 
+					new File("H:/freebase.gz")); 
 			readth.start();
 			decompress(s);
 			 
