@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class FreeSQLBase {
@@ -51,6 +52,21 @@ public class FreeSQLBase {
 			int rank = 0;
 			int cnt0=1,cnt1=1,cnt2=1,cnt3=1,cnt4=1,cnt5=1;
 			String obj1_prev=null;
+			
+			PreparedStatement pstmt1 = null,pstmt2 = null,pstmt3=null,pstmt4=null,pstmt5=null,pstmt0=null;
+			try
+			{
+				pstmt1=con.prepareStatement("INSERT INTO domain VALUES (?,?,?,?)");
+				pstmt2=con.prepareStatement("INSERT INTO type VALUES (?,?,?,?)");
+				pstmt3=con.prepareStatement("INSERT INTO property VALUES (?,?,?,?)");
+				pstmt4=con.prepareStatement("INSERT INTO image_imgsrc VALUES (?,?)");
+				pstmt5=con.prepareStatement("INSERT INTO imgsrc_uri VALUES (?,?)");
+				pstmt0=con.prepareStatement("INSERT INTO entity VALUES (?,?,?,?,?,?)");
+			}
+			catch (Exception e) {
+				System.out.println("MYSQL ERROR:" + e.getMessage());
+			}
+			
 			while (true)
 			{
 				try {
@@ -62,52 +78,43 @@ public class FreeSQLBase {
 							stmt = con.createStatement();
 							if (!domainsql.equals(""))
 							{
-								//System.out.println("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
+								pstmt1.executeBatch();
+								//stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
 								
 							}
 								
 							if (!typesql.equals(""))
 							{
-								//System.out.println("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
+								pstmt2.executeBatch();
+								//stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
 							}
 								
 							if (!propertysql.equals(""))
 							{
-								//System.out.println("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
+								pstmt3.executeBatch();
+								//stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
 							}
 								
 							if (!entitysql.equals(""))
 							{
-								//System.out.println("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
+								pstmt0.executeBatch();
+								//stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
 							}
 								
 							if (!image_imgsrcsql.equals(""))
 							{
-								//System.out.println("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
+								pstmt4.executeBatch();
+								//stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
 							}
 								
 							if (!imgsrc_urisql.equals(""))
 							{
-								//System.out.println("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
-								stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
+								pstmt5.executeBatch();
+								//stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
 							}
-							stmt.close();	
-							/*ResultSet res = stmt.executeQuery("select * from entity");
-							int ret_id;
-							String name;
-							if (res.next()) {
-								ret_id = res.getInt(1);
-								name = res.getString(4);
-								System.out.println(ret_id+" "+name);
-							}*/
+							//stmt.close();	
 						} catch (Exception e) {
 							System.out.println("MYSQL ERROR:" + e.getMessage());
-							//break;
 						}
 						break;
 					}
@@ -130,43 +137,90 @@ public class FreeSQLBase {
 					{
 						if (type==1)
 						{
-							domainsql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							try {
+								pstmt1.setInt(1,id);
+								pstmt1.setString(2, mid);
+								pstmt1.setString(3,name);
+								pstmt1.setString(4,idstring);
+								pstmt1.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							//domainsql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
 							cnt1++;
 						}
 						else if (type==2)
 						{
+							try {
+								pstmt2.setInt(1,id);
+								pstmt2.setString(2, mid);
+								pstmt2.setString(3,name);
+								pstmt2.setString(4,idstring);
+								pstmt2.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 							//id++;
-							//System.out.printf("%s,%s,%s,%d,%d\n",mid, name, idstring, rank, id);
-							typesql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							//typesql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
 							cnt2++;
 						}
 						else if (type==3)
 						{
+							try {
+								pstmt3.setInt(1,id);
+								pstmt3.setString(2, mid);
+								pstmt3.setString(3,name);
+								pstmt3.setString(4,idstring);
+								pstmt3.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 							//id++;
-							//System.out.printf("%s,%s,%s,%d,%d\n",mid, name, idstring, rank, id);
-							propertysql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
+							//propertysql+=String.format("(%d,%s,%s,%s),", id, mid, name, idstring);
 							cnt3++;
 						}
 						else if (type==4)
 						{
 							//id++;
 							//System.out.printf("%s,%s\n",mid, imgsrc);
+							try {
+								pstmt4.setString(1,mid);
+								pstmt4.setString(2, imgsrc);
+								pstmt4.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 							image_imgsrcsql+=String.format("(%s,%s),", mid, imgsrc);
 							cnt4++;
 						}
 						else if (type==5)
 						{
+							try {
+								pstmt5.setString(1,mid);
+								pstmt5.setString(2, imgsrc);
+								pstmt5.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 							//id++;
-							//System.out.printf("%s,%s\n",mid, uri);
-							imgsrc_urisql+=String.format("(%s,%s),", mid, uri);
+							//imgsrc_urisql+=String.format("(%s,%s),", mid, uri);
 							cnt5++;
 						}
 						else
 						{
-							/*id++;
-							if (image!=null)
-								System.out.printf("%s,%s,%d,%d,%s,%s\n",mid, name, rank, id, description, image);*/
-							entitysql+=String.format("(%d,%s,%d,%s,%s,%s),", id, mid, rank, name, description, image);
+							try {
+								pstmt5.setInt(1,id);
+								pstmt5.setString(2, mid);
+								pstmt5.setInt(3,rank);
+								pstmt5.setString(4, name);
+								pstmt5.setString(5,description);
+								pstmt5.setString(6, image);
+								pstmt5.addBatch();
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+							//id++;
+							//entitysql+=String.format("(%d,%s,%d,%s,%s,%s),", id, mid, rank, name, description, image);
 							cnt0++;
 						}
 						
@@ -174,90 +228,72 @@ public class FreeSQLBase {
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO entity VALUES "+entitysql.substring(0,entitysql.length()-1)+";");
-								stmt.close();	
+								pstmt0.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt0=1;
-							entitysql = "";
+							//entitysql = "";
 						}
 						
 						if (cnt1%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO domain VALUES "+domainsql.substring(0,domainsql.length()-1)+";");
-								stmt.close();	
+								pstmt1.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt1=1;
-							domainsql = "";
+							//domainsql = "";
 						}
 						
 						if (cnt2%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO type VALUES "+typesql.substring(0,typesql.length()-1)+";");
-								stmt.close();	
+								pstmt2.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt2=1;
-							typesql = "";
+							//typesql = "";
 						}
 						
 						if (cnt3%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO property VALUES "+propertysql.substring(0,propertysql.length()-1)+";");
-								stmt.close();	
+								pstmt3.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt3=1;
-							propertysql = "";
+							//propertysql = "";
 						}
 						
 						if (cnt4%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO image_imgsrc VALUES "+image_imgsrcsql.substring(0,image_imgsrcsql.length()-1)+";");
-								stmt.close();	
+								pstmt4.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt4=1;
-							image_imgsrcsql = "";
+							//image_imgsrcsql = "";
 						}
 						
 						if (cnt5%1000==0)
 						{
 							System.out.println(id/88788059.0f);
 							try {
-								Statement stmt;
-								stmt = con.createStatement();
-								stmt.executeUpdate("INSERT INTO imgsrc_uri VALUES "+imgsrc_urisql.substring(0,imgsrc_urisql.length()-1)+";");
-								stmt.close();	
+								pstmt5.executeBatch();
 							} catch (Exception e) {
 								System.out.println("MYSQL ERROR:" + e.getMessage());
 							}
 							cnt5=1;
-							imgsrc_urisql = "";
+							//imgsrc_urisql = "";
 						}
 						
 						
@@ -277,7 +313,7 @@ public class FreeSQLBase {
 					mid=mid.substring(2,mid.length());
 					if (mid.length()>98)
 						mid=mid.substring(0,98);
-					mid="\""+mid+"\"";
+					//mid="\""+mid+"\"";
 				}
 				rank++;
 				if (prop.indexOf("type.object.id")!=-1)
@@ -288,7 +324,7 @@ public class FreeSQLBase {
 					idstring=idstring.replaceAll("/",".");
 					if (idstring.length()>98)
 						idstring=idstring.substring(0,98);
-					idstring="\""+idstring+"\"";
+					//idstring="\""+idstring+"\"";
 				}
 				else if (prop.indexOf("type.object.type")!=-1)
 				{
@@ -318,11 +354,11 @@ public class FreeSQLBase {
 					if (obj2.endsWith("@en"))
 					{
 						name=obj2.substring(1, obj2.length()-4);
-						if (name!=null)
-							name=name.replaceAll("\"", "'");
+						/*if (name!=null)
+							name=name.replaceAll("\"", "'");*/
 						if (name.length()>29998)
 							name=name.substring(0,29998);
-						name = "\""+name+"\"";
+						//name = "\""+name+"\"";
 					}
 				}
 				else if (prop.indexOf("common.topic.description")!=-1)
@@ -331,12 +367,13 @@ public class FreeSQLBase {
 					{
 						
 						description = obj2.substring(1, obj2.length()-4);
-						if (description!=null)
-							description=description.replaceAll("\"", "'");
+						/*if (description!=null)
+							description=description.replaceAll("\"", "'");*/
 						if (description.length()>1998)
-							description="\""+description.substring(0,1998)+"\"";
+							description=description.substring(0,1998);
+							/*description="\""+description.substring(0,1998)+"\"";
 						else
-							description="\""+description+"\"";
+							description="\""+description+"\"";*/
 					}
 				}
 				else if (prop.indexOf("common.topic.image")!=-1)
@@ -345,7 +382,7 @@ public class FreeSQLBase {
 					image=obj2_new[obj2_new.length-1];
 					if (image.length()>98)
 						image=image.substring(0,98);
-					image = "\""+image+"\"";
+					//image = "\""+image+"\"";
 				}
 				else if (prop.indexOf("type.content.source")!=-1)
 				{
@@ -353,14 +390,14 @@ public class FreeSQLBase {
 					imgsrc=obj2_new[obj2_new.length-1];
 					if (imgsrc.length()>98)
 						imgsrc=imgsrc.substring(0,98);
-					imgsrc = "\""+imgsrc+"\"";
+					//imgsrc = "\""+imgsrc+"\"";
 				}
 				else if (prop.indexOf("type.content_import.uri")!=-1)
 				{
 					uri=obj2.substring(1,obj2.length()-1);
 					if (uri.length()>498)
 						uri=uri.substring(0,498);
-					uri = "\""+uri+"\"";
+					//uri = "\""+uri+"\"";
 				}
 			}
 		}
