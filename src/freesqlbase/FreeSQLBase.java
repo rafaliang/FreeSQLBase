@@ -243,6 +243,8 @@ public class FreeSQLBase {
 					type = 0;
 					mid=nspart[1];
 					mid=mid.substring(2,mid.length());
+					if (mid.length()>98)
+						mid=mid.substring(0,98);
 					mid="\""+mid+"\"";
 				}
 				rank++;
@@ -251,6 +253,8 @@ public class FreeSQLBase {
 					String[] obj2_new = obj2.substring(1, obj2.length()-1).split("ns/");
 					idstring = obj2_new[obj2_new.length-1];
 					idstring=idstring.substring(1,idstring.length());
+					if (idstring.length()>98)
+						idstring=idstring.substring(0,98);
 					idstring="\""+idstring.replaceAll("/",".")+"\"";
 				}
 				else if (prop.indexOf("type.object.type")!=-1)
@@ -283,6 +287,8 @@ public class FreeSQLBase {
 						name=obj2.substring(1, obj2.length()-4);
 						if (name!=null)
 							name=name.replaceAll("\"", "'");
+						if (name.length()>29998)
+							name=name.substring(0,29998);
 						name = "\""+name+"\"";
 					}
 				}
@@ -303,15 +309,21 @@ public class FreeSQLBase {
 				else if (prop.indexOf("common.topic.image")!=-1)
 				{
 					String[] obj2_new = obj2.substring(1, obj2.length()-1).split("ns/m.");
+					if (image.length()>98)
+						image=image.substring(0,98);
 					image = "\""+obj2_new[obj2_new.length-1]+"\"";
 				}
 				else if (prop.indexOf("type.content.source")!=-1)
 				{
 					String[] obj2_new = obj2.substring(1, obj2.length()-1).split("ns/m.");
+					if (imgsrc.length()>98)
+						imgsrc=imgsrc.substring(0,98);
 					imgsrc = "\""+obj2_new[obj2_new.length-1]+"\"";
 				}
 				else if (prop.indexOf("type.content_import.uri")!=-1)
 				{
+					if (uri.length()>498)
+						uri=uri.substring(0,498);
 					uri = "\""+obj2.substring(1,obj2.length()-1)+"\"";
 				}
 			}
