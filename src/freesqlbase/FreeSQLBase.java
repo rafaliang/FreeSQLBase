@@ -209,13 +209,13 @@ public class FreeSQLBase {
 						else
 						{
 							try {
-								pstmt5.setInt(1,id);
-								pstmt5.setString(2, mid);
-								pstmt5.setInt(3,rank);
-								pstmt5.setString(4, name);
-								pstmt5.setString(5,description);
-								pstmt5.setString(6, image);
-								pstmt5.addBatch();
+								pstmt0.setInt(1,id);
+								pstmt0.setString(2, mid);
+								pstmt0.setInt(3,rank);
+								pstmt0.setString(4, name);
+								pstmt0.setString(5,description);
+								pstmt0.setString(6, image);
+								pstmt0.addBatch();
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
