@@ -325,7 +325,7 @@ public class FreeSQLBase {
 			try {
 				//Connection con = null; // 定义一个MYSQL链接对象
 				Class.forName("com.mysql.jdbc.Driver").newInstance(); // MYSQL驱动
-				con = DriverManager.getConnection("jdbc:mysql://202.120.37.25:23334/Freebase", "root", "thisismysql"); // 链接本地MYSQL
+				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root", "thisissql"); // 链接本地MYSQL
 				System.out.println("yes");				
 				} catch (Exception e) {
 					System.out.println("MYSQL ERROR:" + e.getMessage());
