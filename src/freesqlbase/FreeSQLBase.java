@@ -111,7 +111,7 @@ public class FreeSQLBase {
 						break;
 					}
 					
-					String[] sp = line.split("\t");
+					String[] sp =line.split("\t");
 					obj1 = sp[0].substring(1, sp[0].length()-1);
 					prop = sp[1].substring(1, sp[1].length()-1);
 					obj2 = sp[2];
