@@ -341,7 +341,7 @@ public class FreeSQLBase {
 						{
 							description=description.replaceAll("\"", "'");
 							description=description.replaceAll("\\n"," ");
-							description=description.replaceAll("\\"," ");
+							//description=description.replaceAll("\\"," ");
 						}
 							
 						if (description.length()>1998)
