@@ -3,8 +3,15 @@ package freesqlbase;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
 
@@ -15,301 +22,414 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+//124519884
+//123893488
 public class FreeSQLBase {
 	static PipedOutputStream pos;
 	static PipedInputStream pis;
+	static Connection con = null; // 定义一个MYSQL链接对象
+	static ExecutorService pool = Executors.newFixedThreadPool(2);
+	static ExecutorService linepool = Executors.newFixedThreadPool(16);
+	//static ThreadPoolExecutor pool = new ThreadPoolExecutor(4, 8, 3, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(200),
+    //        new ThreadPoolExecutor.AbortPolicy());
+	static SQLBuffer sqlbuf=new SQLBuffer();
+	static SQLIdCache sqlcache=new SQLIdCache();
+	static HashMap<String,Integer> pidstring_id=new HashMap<String, Integer>();
 	
-	static String domainsql = "";
-	static String entitysql = "";
-	static String typesql = "";
-	static String propertysql = "";
-	static String image_imgsrcsql = "";
-	static String imgsrc_urisql = "";
-	static String entity_typesql="";
-	static String property_schemasql="";
-	static String property_expsql="";
-	static int id = 0;
-	static String obj1 = null;
-	static String prop = null;
-	static String obj2 = null;
-	static Connection con = null;
-	static HashMap<String,Integer> tidstring_id=new HashMap<String, Integer>();
-	static HashMap<String,Integer> tmid_id=new HashMap<String, Integer>();
-	static HashMap<String,Integer> pmid_id=new HashMap<String, Integer>();
-
-	
-	static void parse(String[] line)
+	static String TrimURL(String url)
 	{
-		System.out.printf("%s,%s,%s\n",line[0],line[1],line[2]);
+		if(url==null)
+			return null;
+		if(!url.startsWith("<http"))
+			return url;
+		int last;
+		if(url.charAt(url.length()-1)=='>')
+		{
+			last=url.length()-1;
+		}
+		else
+		{
+			last=url.length();
+		}
+		return url.substring(url.lastIndexOf("/m.")+3,last);
 	}
 	
-	static Integer extract_type(String obj2)
+	static class KeyNotFoundException extends Exception
 	{
-		String[] nspart2 = obj2.split("ns/");
-		String type_con=nspart2[1];
-		Integer type_id = null;
-		type_con.subSequence(0, type_con.length()-1);
-		if (type_con.startsWith("m."))
-		{
-			type_con=(type_con.split("m."))[1];
-			type_id=tmid_id.get(type_con);
+
+		public KeyNotFoundException(String s) {
+			super("SQL URL Not found: "+s);
+			// TODO Auto-generated constructor stub
 		}
-		else 	
-		{
-			type_id=tidstring_id.get(type_con);
-		}
-		return type_id;
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 433079364893439203L;
 		
 	}
 	
-	static Thread readth = new Thread() {
-		@SuppressWarnings("null")
-		@Override
-		public void run() {
-			String line;
-			BufferedReader reader = new BufferedReader(new InputStreamReader(pis));
-			String mid = null;
-			int type = -1;
-			int cnt1=1,cnt2=1,cnt3=1;
-			Integer entity_id = 0, property_id = 0, type_id=0;
-			String obj1_prev=null;
-			//String type_mid;
-			String type_idstring = null;
-			int tid;
-			PreparedStatement pstmt_ei = null, pstmt_ti = null, pstmt_pi = null;
-			ResultSet rs_ei = null, rs_ti = null, rs_pi = null;
-			try {
-				//pstmt_ei=con.prepareStatement("select mid,id from entity",ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				//pstmt_ei.setFetchSize(Integer.MIN_VALUE);  
-				//pstmt_ei.setFetchDirection(ResultSet.FETCH_REVERSE);  
-				//pstmt_pi=con.prepareStatement("select mid,id from property");
-				pstmt_ti=con.prepareStatement("select idstring,id,mid from type");
-				//rs_ei=pstmt_ei.executeQuery();
-				//rs_pi=pstmt_pi.executeQuery();
-				rs_ti=pstmt_ti.executeQuery();
-				while (rs_ti.next())
-				{
-					tid=rs_ti.getInt("id");
-					tidstring_id.put(rs_ti.getString("idstring"), tid);
-					tmid_id.put(rs_ti.getString("mid"), tid);
-				}
-				rs_ti.close();
-				pstmt_ti.close();
-				
-				pstmt_pi=con.prepareStatement("select name,id from property");
-				rs_pi=pstmt_pi.executeQuery();
-				while (rs_pi.next())
-				{
-					pmid_id.put(rs_pi.getString("name"), rs_pi.getInt("id"));
-				}
-				rs_pi.close();
-				pstmt_pi.close();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			
-			while (true)
+	static class SQLIdCache
+	{
+		final int SIZE=1024*1024;
+		int[] cache=new int[SIZE];
+		Object[] sync=new Object[SIZE];
+		String[] strs=new String[SIZE];
+		long hit=0;
+		long cnt=1;
+		SQLIdCache()
+		{
+			for(int i=0;i<SIZE;i++)
 			{
-				try {
-					line = reader.readLine();
-					if (line.isEmpty())
-					{
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							if (!entity_typesql.equals(""))
-							{
-								stmt.executeUpdate("INSERT INTO entity_type VALUES "+entity_typesql.substring(0,entity_typesql.length()-1)+";");
-							}
-								
-							if (!property_schemasql.equals(""))
-							{
-								stmt.executeUpdate("INSERT INTO property_schema VALUES "+property_schemasql.substring(0,property_schemasql.length()-1)+";");
-							}
-								
-							if (!property_expsql.equals(""))
-							{
-								stmt.executeUpdate("INSERT INTO property_expectedtype VALUES "+property_expsql.substring(0,property_expsql.length()-1)+";");
-							}
-							stmt.close();	
-						} catch (Exception e) {
-							System.out.println("MYSQL ERROR:" + e.getMessage());
+				sync[i]=new Object();
+				cache[i]=-1;
+			}
+		}
+		
+		int get(String s) throws KeyNotFoundException {
+			// try
+			// {
+			int i = s.hashCode();
+			if (i < 0)
+				i = -i;
+			i = i % SIZE;
+			cnt++;
+			synchronized (sync[i])
+			{
+				if (cache[i] != -1 && strs[i].equals(s)) {
+					hit++;
+					return cache[i];
+				} else {
+					int ret = -1;
+					PreparedStatement stmt = null;
+					try {
+						stmt = con.prepareStatement("select id from entity where mid=?");
+						stmt.setString(1, s);
+						ResultSet res = stmt.executeQuery();
+						if (res.next()) {
+							ret = res.getInt(1);
 						}
-						break;
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} finally {
+						if (stmt != null) {
+							try {
+								stmt.close();
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 					}
-					String[] sp =line.split("\t");
-					obj1 = sp[0].substring(1, sp[0].length()-1);
-					prop = sp[1].substring(1, sp[1].length()-1);
-					obj2 = sp[2];
+					if (ret == -1)
+						throw new KeyNotFoundException(s);
+					strs[i]=s;
+					cache[i] = ret;
+					return ret;
+
 				}
-				catch (IOException e)
-				{
+			}
+			/*
+			 * } catch (Exception e) { //e.printStackTrace(); throw new
+			 * KeyNotFoundException(s); }
+			 */
+		}
+
+	}
+	static class SQLTask
+	{		
+		int id1,id2,prop;
+		public SQLTask(int i1,int p,int i2)
+		{
+			id1=i1;
+			id2=i2;
+			prop=p;
+		}
+	}
+	
+	public static final class StringTask implements Callable<String> {
+		PreparedStatement stmt;
+		static AtomicInteger cnt=new AtomicInteger(0);
+		static AtomicInteger pending_cnt=new AtomicInteger(0);
+		static AtomicInteger interval_cnt=new AtomicInteger(0);
+		
+		public StringTask(PreparedStatement s)
+		{
+			pending_cnt.incrementAndGet();
+			interval_cnt.incrementAndGet();
+			stmt=s;
+		}
+		public String call() {
+			
+			// Long operations
+			try {
+				if(stmt==null)
+					return null;
+				stmt.executeUpdate();
+				cnt.incrementAndGet();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}		
+			finally{
+				try {
+					if(stmt!=null)
+						stmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				String[] nspart = obj1.split("ns/");
-				if (!nspart[1].startsWith("m."))
-					continue;
-				if (!obj1.equals(obj1_prev))
+				pending_cnt.decrementAndGet();
+			}
+			return null;
+		}
+	}
+	
+	static Thread statth = new Thread() {
+		@Override
+		public void run() {	
+			for(;;)
+			{
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ThreadDeath e)
 				{
-					if (cnt1%1001==0)
-					{
-						System.out.println(entity_id/88767079.0f);
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO entity_type VALUES "+entity_typesql.substring(0,entity_typesql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt1=1;
-						entity_typesql="";
-					}
 					
-					if (cnt2%1001==0)
-					{
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO property_schema VALUES "+property_schemasql.substring(0,property_schemasql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt2=1;
-						property_schemasql="";
-					}
-					
-					if (cnt3%1001==0)
-					{
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO property_expectedtype VALUES "+property_expsql.substring(0,property_expsql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt3=1;
-						property_expsql="";
-					}
-					
-					obj1_prev=obj1;
-					type = 0;
-					entity_id = null;
-					property_id = null;
-					type_id = null;
-					mid=nspart[1];
-					mid=mid.substring(2,mid.length());
-					if (mid.length()>98)
-						mid=mid.substring(0,98);
-					try {
-						pstmt_ei=con.prepareStatement("select id from entity where mid=?");
-						pstmt_ei.setString(1, mid);
-						rs_ei=pstmt_ei.executeQuery();
-						if (rs_ei.next())
-							entity_id=rs_ei.getInt("id");
-						rs_ei.close();
-						pstmt_ei.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-					property_id=pmid_id.get(mid);
-					if (entity_id!=null)
-					{
-						type=1;
-					}
-					else if (property_id!=null)
-						type=2;
-					else type=0;
 				}
-				if (type==0)
-					continue;
-				else if (type==1)
-				{
-					if (prop.indexOf("type.object.type")!=-1)
-					{
-						obj2=obj2.substring(0,obj2.length()-1);
-						String[] nspart2 = obj2.split("ns/");
-						type_idstring=nspart2[1];
-						if (!type_idstring.startsWith("m."))
-						{
-							type_id=tidstring_id.get(type_idstring);
-						}
-						else
-						{
-							type_idstring=(type_idstring.split("m."))[1];
-							type_id=tmid_id.get(type_idstring);
-						}
-						//type_id=extract_type(obj2);
-						//System.out.println("1: "+type_idstring+" "+type_id);
-						entity_typesql+=String.format("(%d,%d),", entity_id, type_id);	
-						cnt1++;
-					}
-				}
-				else if (type==2)
-				{
-					if (prop.indexOf("type.property.schema")!=-1)
-					{
-						//type_id=extract_type(obj2);
-						obj2=obj2.substring(0,obj2.length()-1);
-						String[] nspart2 = obj2.split("ns/");
-						type_idstring=nspart2[1];
-						if (type_idstring.startsWith("m."))
-						{
-							type_idstring=(type_idstring.split("m."))[1];
-							type_id=tmid_id.get(type_idstring);
-						}
-						else
-						{
-							type_id=tidstring_id.get(type_idstring);
-						}
-						System.out.println("2: "+type_idstring+" "+type_id);
-						property_schemasql+=String.format("(%d,%d),", property_id, type_id);	
-						cnt2++;
-					}
-					else if (prop.indexOf("type.property.expected_type")!=-1)
-					{
-						//type_id=extract_type(obj2);
-						obj2=obj2.substring(0,obj2.length()-1);
-						String[] nspart2 = obj2.split("ns/");
-						type_idstring=nspart2[1];
-						if (type_idstring.startsWith("m."))
-						{
-							type_idstring=(type_idstring.split("m."))[1];
-							type_id=tmid_id.get(type_idstring);
-						}
-						else
-						{
-							type_id=tidstring_id.get(type_idstring);
-						}
-						System.out.println("3: "+type_idstring+" "+type_id);
-						property_expsql+=String.format("(%d,%d),", property_id, type_id);	
-						cnt3++;
-					}
-				}
+			
+				System.out.printf("[stats] i = %d per = %f, tasksdone = %d, sql_queued = %d, line_queued = %d, hit_rate=%f, sql_tasks=%d\n",
+						readth.i,1.0*readth.i/3130753067l,StringTask.cnt.get(),StringTask.pending_cnt.get(),EntryTask.pending.get(),
+						1.0*sqlcache.hit/sqlcache.cnt,StringTask.interval_cnt.get());
+				sqlcache.hit=0;
+				sqlcache.cnt=1;
+				StringTask.interval_cnt.set(0);
+				
 			}
 		}
 	};
+	
+	
+	static private final class EntryTask implements Callable<String> {
+		String[] line;
+		int id;
+		static AtomicInteger pending=new AtomicInteger(0);
+		public EntryTask(String[] lne,int i){
+			line=lne;
+			id=i;
+			pending.incrementAndGet();
+		}
+		@Override
+		public String call() {
+			int id1,id2;
+			//int id_from_2=-1;
+			String p=null;
+			int prop=-1;
+			try {
+					if (id!=-1)
+					{
+						id1=id;
+						p=line[1].substring(28,line[1].length()-1);
+						if (pidstring_id.containsKey(p))
+						{
+							prop=pidstring_id.get(p);
+							if (line[2].startsWith("<http://rdf.freebase.com/ns/m.")){
+								id2 = sqlcache.get(TrimURL(line[2]));
+								//if (id <= id_from_2)
+								sqlbuf.put_et(new SQLTask(id1,prop,id2));
+							}
+						}
+					}
+			} catch (KeyNotFoundException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				//System.out.println(e.getMessage());
+			}
+			finally
+			{
+				pending.decrementAndGet();
+			}
+			if(pending.get()<=0 && sqlbuf.readdone)
+			{
+				System.out.println("Flush buffer");
+				sqlbuf.flush();
+			}
+			return null;
+		}
+		
+	}
+	
 
+	static class Entity
+	{
+		int id;
+		int img=-1;
+		String des;
+		String url;
+		Entity(int i,String u)
+		{
+			url=u;
+			id=i;
+		}
+		void parse (String[] line)
+		{
+			
+		}
+		void end()
+		{
+
+		}
+	}
+
+	
+	static class ReaderThread extends  Thread {
+
+		public long i = 0;
+		public int id=0;
+
+		
+
+		@Override
+		public void run() {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(pis));
+			String last=null;
+			int id=-1;
+			int rank=0;
+			Entity cur=null;
+			for (;;) {
+				i++;
+				
+				String line = null;
+				try {
+					line = reader.readLine();
+					if(line.isEmpty())
+					{
+						System.out.printf("Almost done\n");
+						//sqlbuf.put_rank(new SQLTask(id,rank));
+						sqlbuf.done();
+						if(EntryTask.pending.get()==0)
+						{
+							System.out.println("Main thread Flush");
+							sqlbuf.flush();
+						}
+						//statth.stop();
+						break;
+					}
+					
+					while(EntryTask.pending.get()>500000 
+							|| StringTask.pending_cnt.get()>300)
+					{
+						//System.out.println("Queue too long, sleeping...");
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					String[] sp=line.split("\t");
+					///////////////////////////////////////////////
+					if(!sp[0].equals(last))
+					{
+						
+						if(id!=-1)
+						{
+							//cur.end();
+							//this line should be in use when running the full adaption
+							//sqlbuf.put_rank(new SQLTask(id,rank));
+						}
+						rank=0;
+						last=sp[0];
+						if(!last.startsWith("<http://rdf.freebase.com/ns/m."))
+							continue;
+						//id++
+						try
+						{
+							id=sqlcache.get(TrimURL(last));
+						}catch (KeyNotFoundException e) {
+							// TODO Auto-generated catch block
+							//e.printStackTrace();
+							//System.out.println(e.getMessage());
+						}
+							
+						//cur=new Entity(id,sp[0]);
+					}
+					//rank++;
+					//cur.parse(sp);
+					//if(id<=124519884)
+					//	continue;
+					///////////////////////////////////////////////		
+					
+					
+					//this line should be in use when running the full adaption
+					linepool.submit(new EntryTask(sp,id));				
+				}
+				catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			try {
+				reader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	};
+	static ReaderThread readth = new ReaderThread();
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
 			try {
-				//Connection con = null; // 定义一个MYSQL链接对象
+				//create table main( url varchar(256), name varchar(60000), type varchar(128), id int(32) primary key, rank int(32));
+				//create table other(e_id int(32), t_id int(32), primary key(e_id,t_id));
+				//2*Maxint-1164214229=3130753067
+				
 				Class.forName("com.mysql.jdbc.Driver").newInstance(); // MYSQL驱动
-				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root","thisismysql"); 
+				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root", "thisismysql"); // 链接本地MYSQL
 				//con = DriverManager.getConnection("jdbc:mysql://202.120.37.25:23334/Freebase", "root","thisismysql"); // 链接本地MYSQL
-				} catch (Exception e) {
-					System.out.println("MYSQL ERROR:" + e.getMessage());
-				}
+				System.out.println("Connected to MYSQL");
+				
+				try {
+					PreparedStatement pstmt_pi=con.prepareStatement("select idstring,id from property");
+					ResultSet rs_pi=pstmt_pi.executeQuery();
+					while (rs_pi.next())
+					{
+						pidstring_id.put(rs_pi.getString("idstring"), rs_pi.getInt("id"));
+					}
+					rs_pi.close();
+					pstmt_pi.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}	
+				
+				/*Statement stmt;
+				stmt = con.createStatement();
+				stmt.executeUpdate("INSERT INTO test VALUES (1,'KK')");
+				ResultSet res = stmt.executeQuery("select * from test");
+				int ret_id;
+				String name;
+				if (res.next()) {
+					ret_id = res.getInt(1);
+					name = res.getString(2);
+					System.out.println(ret_id+" "+name);
+				}*/
+			} catch (Exception e) {
+				System.out.println("MYSQL ERROR:" + e.getMessage());
+			} 
 
 			pos = new PipedOutputStream(); pis = new PipedInputStream(pos);
 			FileInputStream s = new FileInputStream(
 					new File("/home/freebase.gz")); 
 					//new File("H:/freebase.gz")); 
 			readth.start();
+			statth.start();
 			decompress(s);
 			 
 		} catch (Exception e) {
@@ -324,7 +444,7 @@ public class FreeSQLBase {
 		GZIPInputStream gis = new GZIPInputStream(is);
 		int count;
 		byte data[] = new byte[4096];
-		
+
 		while ((count = gis.read(data, 0, 4096)) != -1) {
 			pos.write(data, 0, count);
 		}
