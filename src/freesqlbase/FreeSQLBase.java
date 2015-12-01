@@ -34,6 +34,9 @@ public class FreeSQLBase {
 	static String prop = null;
 	static String obj2 = null;
 	static Connection con = null;
+	static HashMap<String,Integer> tidstring_id=new HashMap<String, Integer>();
+	static HashMap<String,Integer> tmid_id=new HashMap<String, Integer>();
+	static HashMap<String,Integer> pmid_id=new HashMap<String, Integer>();
 
 	
 	static void parse(String[] line)
@@ -41,6 +44,24 @@ public class FreeSQLBase {
 		System.out.printf("%s,%s,%s\n",line[0],line[1],line[2]);
 	}
 	
+	static Integer extract_type(String obj2)
+	{
+		String[] nspart2 = obj2.split("ns/");
+		String type_con=nspart2[1];
+		Integer type_id = null;
+		type_con.subSequence(0, type_con.length()-1);
+		if (type_con.startsWith("m."))
+		{
+			type_con=(type_con.split("m."))[1];
+			type_id=tmid_id.get(type_con);
+		}
+		else 	
+		{
+			type_id=tidstring_id.get(type_con);
+		}
+		return type_id;
+		
+	}
 	
 	static Thread readth = new Thread() {
 		@SuppressWarnings("null")
@@ -49,24 +70,13 @@ public class FreeSQLBase {
 			String line;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(pis));
 			String mid = null;
-			String name = null;
-			String description = null;
-			
-			String image=null;
-			String imgsrc=null;
-			String uri=null;
 			int type = -1;
-			int rank = 0;
 			int cnt1=1,cnt2=1,cnt3=1;
-			Boolean is_ei_read = false, is_pi_read=false;;
 			Integer entity_id = 0, property_id = 0, type_id=0;
 			String obj1_prev=null;
-			String entity=null, property = null;
 			//String type_mid;
 			String type_idstring = null;
-			HashMap<String,Integer> tidstring_id=new HashMap<String, Integer>();
-			HashMap<String,Integer> pmid_id=new HashMap<String, Integer>();
-			Iterator iter=null;
+			int tid;
 			PreparedStatement pstmt_ei = null, pstmt_ti = null, pstmt_pi = null;
 			ResultSet rs_ei = null, rs_ti = null, rs_pi = null;
 			try {
@@ -74,13 +84,15 @@ public class FreeSQLBase {
 				//pstmt_ei.setFetchSize(Integer.MIN_VALUE);  
 				//pstmt_ei.setFetchDirection(ResultSet.FETCH_REVERSE);  
 				//pstmt_pi=con.prepareStatement("select mid,id from property");
-				pstmt_ti=con.prepareStatement("select idstring,id from type");
+				pstmt_ti=con.prepareStatement("select idstring,id,mid from type");
 				//rs_ei=pstmt_ei.executeQuery();
 				//rs_pi=pstmt_pi.executeQuery();
 				rs_ti=pstmt_ti.executeQuery();
 				while (rs_ti.next())
 				{
-					tidstring_id.put(rs_ti.getString("idstring"), rs_ti.getInt("id"));
+					tid=rs_ti.getInt("id");
+					tidstring_id.put(rs_ti.getString("idstring"), tid);
+					tmid_id.put(rs_ti.getString("mid"), tid);
 				}
 				rs_ti.close();
 				pstmt_ti.close();
@@ -93,26 +105,6 @@ public class FreeSQLBase {
 				}
 				rs_pi.close();
 				pstmt_pi.close();
-				//iter=pmid_id.entrySet().iterator();
-				
-				/*pstmt_ei=con.prepareStatement("select mid,id from entity",ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				pstmt_ei.setFetchSize(Integer.MIN_VALUE);  
-				pstmt_ei.setFetchDirection(ResultSet.FETCH_REVERSE);
-				rs_ei=pstmt_ei.executeQuery();*/
-				/*if (rs_ei.next())
-				{
-					entity=rs_ei.getString("mid");
-					entity_id=rs_ei.getInt("id");
-				}
-				else
-					is_ei_read=true;
-				if (rs_pi.next())
-				{
-					property=rs_pi.getString("mid");
-					property_id=rs_pi.getInt("id");
-				}
-				else
-					is_pi_read=true;*/
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -123,7 +115,7 @@ public class FreeSQLBase {
 					line = reader.readLine();
 					if (line.isEmpty())
 					{
-						try {
+						/*try {
 							Statement stmt;
 							stmt = con.createStatement();
 							if (!entity_typesql.equals(""))
@@ -144,7 +136,7 @@ public class FreeSQLBase {
 						} catch (Exception e) {
 							System.out.println("MYSQL ERROR:" + e.getMessage());
 						}
-						break;
+						break;*/
 					}
 					String[] sp =line.split("\t");
 					obj1 = sp[0].substring(1, sp[0].length()-1);
@@ -160,7 +152,7 @@ public class FreeSQLBase {
 					continue;
 				if (!obj1.equals(obj1_prev))
 				{
-					if (cnt1%1001==0)
+					/*if (cnt1%1001==0)
 					{
 						System.out.println(entity_id/88767079.0f);
 						try {
@@ -201,7 +193,7 @@ public class FreeSQLBase {
 						}
 						cnt3=1;
 						property_expsql="";
-					}
+					}*/
 					
 					obj1_prev=obj1;
 					type = 0;
@@ -238,11 +230,20 @@ public class FreeSQLBase {
 				{
 					if (prop.indexOf("type.object.type")!=-1)
 					{
+						obj2=obj2.substring(0,obj2.length()-1);
 						String[] nspart2 = obj2.split("ns/");
 						type_idstring=nspart2[1];
-						type_idstring=type_idstring.substring(0,type_idstring.length()-1);
-						type_id=tidstring_id.get(type_idstring);
-						//System.out.println(type_idstring+" "+type_id);
+						if (!type_idstring.startsWith("m."))
+						{
+							type_id=tidstring_id.get(type_idstring);
+						}
+						else
+						{
+							type_idstring=(type_idstring.split("m."))[1];
+							type_id=tmid_id.get(type_idstring);
+						}
+						//type_id=extract_type(obj2);
+						//System.out.println("1: "+type_idstring+" "+type_id);
 						entity_typesql+=String.format("(%d,%d),", entity_id, type_id);	
 						cnt1++;
 					}
@@ -251,19 +252,39 @@ public class FreeSQLBase {
 				{
 					if (prop.indexOf("type.property.schema")!=-1)
 					{
+						//type_id=extract_type(obj2);
+						obj2=obj2.substring(0,obj2.length()-1);
 						String[] nspart2 = obj2.split("ns/");
 						type_idstring=nspart2[1];
-						type_idstring=type_idstring.substring(0,type_idstring.length()-1);
-						type_id=tidstring_id.get(type_idstring);
+						if (type_idstring.startsWith("m."))
+						{
+							type_idstring=(type_idstring.split("m."))[1];
+							type_id=tmid_id.get(type_idstring);
+						}
+						else
+						{
+							type_id=tidstring_id.get(type_idstring);
+						}
+						System.out.println("2: "+type_idstring+" "+type_id);
 						property_schemasql+=String.format("(%d,%d),", property_id, type_id);	
 						cnt2++;
 					}
 					else if (prop.indexOf("type.property.expected_type")!=-1)
 					{
+						//type_id=extract_type(obj2);
+						obj2=obj2.substring(0,obj2.length()-1);
 						String[] nspart2 = obj2.split("ns/");
 						type_idstring=nspart2[1];
-						type_idstring=type_idstring.substring(0,type_idstring.length()-1);
-						type_id=tidstring_id.get(type_idstring);
+						if (type_idstring.startsWith("m."))
+						{
+							type_idstring=(type_idstring.split("m."))[1];
+							type_id=tmid_id.get(type_idstring);
+						}
+						else
+						{
+							type_id=tidstring_id.get(type_idstring);
+						}
+						System.out.println("3: "+type_idstring+" "+type_id);
 						property_expsql+=String.format("(%d,%d),", property_id, type_id);	
 						cnt3++;
 					}
