@@ -59,6 +59,7 @@ public class FreeSQLBase {
 
 		public KeyNotFoundException(String s) {
 			super("SQL URL Not found: "+s);
+			System.out.println(s);
 			// TODO Auto-generated constructor stub
 		}
 
