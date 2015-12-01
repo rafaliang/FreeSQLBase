@@ -146,51 +146,6 @@ public class FreeSQLBase {
 						}
 						break;
 					}
-					
-					if (cnt1%10001==0)
-					{
-						System.out.println(entity_id/88767079.0f);
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO entity_type VALUES "+entity_typesql.substring(0,entity_typesql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt1=1;
-						entity_typesql="";
-					}
-					
-					if (cnt2%10001==0)
-					{
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO property_schema VALUES "+property_schemasql.substring(0,property_schemasql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt2=1;
-						property_schemasql="";
-					}
-					
-					if (cnt3%10001==0)
-					{
-						try {
-							Statement stmt;
-							stmt = con.createStatement();
-							stmt.executeUpdate("INSERT INTO property_expectedtype VALUES "+property_expsql.substring(0,property_expsql.length()-1)+";");
-							stmt.close();
-						} catch (SQLException e) {
-							e.printStackTrace();
-						}
-						cnt3=1;
-						property_expsql="";
-					}
-					
-					
 					String[] sp =line.split("\t");
 					obj1 = sp[0].substring(1, sp[0].length()-1);
 					prop = sp[1].substring(1, sp[1].length()-1);
@@ -205,6 +160,49 @@ public class FreeSQLBase {
 					continue;
 				if (!obj1.equals(obj1_prev))
 				{
+					if (cnt1%1001==0)
+					{
+						System.out.println(entity_id/88767079.0f);
+						try {
+							Statement stmt;
+							stmt = con.createStatement();
+							stmt.executeUpdate("INSERT INTO entity_type VALUES "+entity_typesql.substring(0,entity_typesql.length()-1)+";");
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+						cnt1=1;
+						entity_typesql="";
+					}
+					
+					if (cnt2%1001==0)
+					{
+						try {
+							Statement stmt;
+							stmt = con.createStatement();
+							stmt.executeUpdate("INSERT INTO property_schema VALUES "+property_schemasql.substring(0,property_schemasql.length()-1)+";");
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+						cnt2=1;
+						property_schemasql="";
+					}
+					
+					if (cnt3%1001==0)
+					{
+						try {
+							Statement stmt;
+							stmt = con.createStatement();
+							stmt.executeUpdate("INSERT INTO property_expectedtype VALUES "+property_expsql.substring(0,property_expsql.length()-1)+";");
+							stmt.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+						cnt3=1;
+						property_expsql="";
+					}
+					
 					obj1_prev=obj1;
 					type = 0;
 					entity_id = null;
