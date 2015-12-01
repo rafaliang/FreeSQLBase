@@ -85,11 +85,11 @@ public class FreeSQLBase {
 				rs_ti.close();
 				pstmt_ti.close();
 				
-				pstmt_pi=con.prepareStatement("select mid,id from property");
+				pstmt_pi=con.prepareStatement("select name,id from property");
 				rs_pi=pstmt_pi.executeQuery();
 				while (rs_pi.next())
 				{
-					pmid_id.put(rs_pi.getString("mid"), rs_pi.getInt("id"));
+					pmid_id.put(rs_pi.getString("name"), rs_pi.getInt("id"));
 				}
 				rs_pi.close();
 				pstmt_pi.close();
