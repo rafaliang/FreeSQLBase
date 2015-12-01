@@ -115,7 +115,7 @@ public class FreeSQLBase {
 					line = reader.readLine();
 					if (line.isEmpty())
 					{
-						/*try {
+						try {
 							Statement stmt;
 							stmt = con.createStatement();
 							if (!entity_typesql.equals(""))
@@ -136,7 +136,7 @@ public class FreeSQLBase {
 						} catch (Exception e) {
 							System.out.println("MYSQL ERROR:" + e.getMessage());
 						}
-						break;*/
+						break;
 					}
 					String[] sp =line.split("\t");
 					obj1 = sp[0].substring(1, sp[0].length()-1);
@@ -152,7 +152,7 @@ public class FreeSQLBase {
 					continue;
 				if (!obj1.equals(obj1_prev))
 				{
-					/*if (cnt1%1001==0)
+					if (cnt1%1001==0)
 					{
 						System.out.println(entity_id/88767079.0f);
 						try {
@@ -193,7 +193,7 @@ public class FreeSQLBase {
 						}
 						cnt3=1;
 						property_expsql="";
-					}*/
+					}
 					
 					obj1_prev=obj1;
 					type = 0;
