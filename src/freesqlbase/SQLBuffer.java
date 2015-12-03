@@ -22,7 +22,7 @@ public class SQLBuffer{
 		PreparedStatement stmt=null;
 		try {
 			StringBuffer buf=new StringBuffer();
-			buf.append("INSERT INTO relation Values (?,?,?)");
+			buf.append("INSERT INTO test Values (?,?,?)");
 			for(int i=1;i<count;i++)
 			{
 				buf.append(",(?,?,?)");

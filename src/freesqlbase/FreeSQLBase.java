@@ -35,6 +35,9 @@ public class FreeSQLBase {
 	static SQLBuffer sqlbuf=new SQLBuffer();
 	static SQLIdCache sqlcache=new SQLIdCache();
 	static HashMap<String,Integer> pidstring_id=new HashMap<String, Integer>();
+	static int [] map=new int[8];
+	static HashMap<String,Integer> strmap=new HashMap<String, Integer>();
+	
 	
 	static String TrimURL(String url)
 	{
@@ -54,12 +57,23 @@ public class FreeSQLBase {
 		return url.substring(url.lastIndexOf("/m.")+3,last);
 	}
 	
+	static int getID(String mid)
+	{
+		int id=0;
+		int len=mid.length();
+		for (int i=0;i<len;++i)
+		{
+			id+=map[i];
+		}
+		return id;
+	}
+	
 	static class KeyNotFoundException extends Exception
 	{
 
 		public KeyNotFoundException(String s) {
 			super("SQL URL Not found: "+s);
-			System.out.println(s);
+			//System.out.println(s);
 			// TODO Auto-generated constructor stub
 		}
 
@@ -230,9 +244,9 @@ public class FreeSQLBase {
 			String p=null;
 			int prop=-1;
 			try {
-					if (id!=-1)
+					if (line[0].startsWith("<http://rdf.freebase.com/ns/m."))
 					{
-						id1=id;
+						id1 = sqlcache.get(TrimURL(line[2]));
 						p=line[1].substring(28,line[1].length()-1);
 						if (pidstring_id.containsKey(p))
 						{
@@ -346,19 +360,19 @@ public class FreeSQLBase {
 						last=sp[0];
 						if(!last.startsWith("<http://rdf.freebase.com/ns/m."))
 							continue;
-						//id++
-						try
+						id++;
+						/*try
 						{
 							id=sqlcache.get(TrimURL(last));
 						}catch (KeyNotFoundException e) {
 							// TODO Auto-generated catch block
 							//e.printStackTrace();
 							//System.out.println(e.getMessage());
-						}
+						}*/
 							
 						//cur=new Entity(id,sp[0]);
 					}
-					//rank++;
+					rank++;
 					//cur.parse(sp);
 					//if(id<=124519884)
 					//	continue;
@@ -385,6 +399,41 @@ public class FreeSQLBase {
 	static ReaderThread readth = new ReaderThread();
 	
 	public static void main(String[] args) {
+		map[0]=0;
+		for (int i=1;i<8;++i)
+		{
+			map[i]=(int) Math.pow(32, 7-i);
+		}
+		strmap.put("0", 0);
+		strmap.put("1", 1);
+		strmap.put("2", 2);
+		strmap.put("3", 3);
+		strmap.put("4", 4);
+		strmap.put("5", 5);
+		strmap.put("6", 6);
+		strmap.put("7", 7);
+		strmap.put("8", 8);
+		strmap.put("9", 9);
+		strmap.put("b", 0);
+		strmap.put("c", 1);
+		strmap.put("d", 2);
+		strmap.put("f", 3);
+		strmap.put("g", 4);
+		strmap.put("h", 5);
+		strmap.put("j", 6);
+		strmap.put("k", 7);
+		strmap.put("l", 8);
+		strmap.put("m", 9);
+		strmap.put("n", 0);
+		strmap.put("p", 1);
+		strmap.put("d", 2);
+		strmap.put("f", 3);
+		strmap.put("g", 4);
+		strmap.put("h", 5);
+		strmap.put("j", 6);
+		strmap.put("k", 7);
+		strmap.put("l", 8);
+		strmap.put("m", 9);
 		// TODO Auto-generated method stub
 		try {
 			try {
@@ -393,8 +442,8 @@ public class FreeSQLBase {
 				//2*Maxint-1164214229=3130753067
 				
 				Class.forName("com.mysql.jdbc.Driver").newInstance(); // MYSQL驱动
-				con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root", "thisismysql"); // 链接本地MYSQL
-				//con = DriverManager.getConnection("jdbc:mysql://202.120.37.25:23334/Freebase", "root","thisismysql"); // 链接本地MYSQL
+				//con = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/Freebase", "root", "thisismysql"); // 链接本地MYSQL
+				con = DriverManager.getConnection("jdbc:mysql://202.120.37.25:23334/Freebase", "root","thisismysql"); // 链接本地MYSQL
 				System.out.println("Connected to MYSQL");
 				
 				try {
@@ -427,8 +476,8 @@ public class FreeSQLBase {
 
 			pos = new PipedOutputStream(); pis = new PipedInputStream(pos);
 			FileInputStream s = new FileInputStream(
-					new File("/home/freebase.gz")); 
-					//new File("H:/freebase.gz")); 
+					//new File("/home/freebase.gz")); 
+					new File("H:/freebase.gz")); 
 			readth.start();
 			statth.start();
 			decompress(s);
